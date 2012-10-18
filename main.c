@@ -68,6 +68,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static char str[125] = {0, };
 	
 	static BITMAPFILEHEADER *bfp;	
+	static BITMAPINFOHEADER *bip;
 	
 	static char *image_p;
 	
@@ -78,7 +79,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
     {
 		case WM_CREATE:
 			hWndMain = hWnd;
-			
+					
 			/*비트맵 파일을 불러온다.*/
 			hFile = CreateFile(TEXT("1.bmp"), GENERIC_READ, 0, NULL,
 						OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -95,8 +96,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 				CloseHandle(hFile);
 				
 				bfp = (BITMAPFILEHEADER *)c_image;
+				bip = (BITMAPINFOHEADER *)(c_image + sizeof(BITMAPFILEHEADER));
+				
 				wsprintf(str, TEXT("%d"), bfp -> bfSize);	/*파일 크기 정보*/
-												
 			}
 			InvalidateRect(hWnd, NULL, TRUE);
 							
@@ -113,23 +115,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			}*/
 			
 			image_p = c_image + (bfp -> bfOffBits);	/*image_p 는 image의 처음을 가리키게 된다.*/
-			
+							
 			/*화면에 사진을 출력*/
-			for(i_cnt_y = 0; 710 > i_cnt_y; ++i_cnt_y)
-			{		
-				for(i_cnt_x = 0; 361 > i_cnt_x; ++i_cnt_x)
-				{
-					SetPixel(hdc, i_cnt_x, 710 - i_cnt_y, RGB(*(image_p + 2), *(image_p + 1), *(image_p + 0)));	/*이미지의 한 줄만 출력해 본다. BGR 순으로 나온다.*/
+			for(i_cnt_y = 0; (bip -> biHeight) > i_cnt_y; ++i_cnt_y)
+			{	
+				for(i_cnt_x = 0; (bip -> biWidth) > i_cnt_x; ++i_cnt_x)
+				{							
+					/*사진을 픽셀 단위로 출력*/
+					SetPixel(hdc, i_cnt_x, (bip -> biHeight) - i_cnt_y, RGB(*(image_p + 2), *(image_p + 1), *(image_p + 0)));	/*이미지의 한 줄만 출력해 본다. BGR 순으로 나온다.*/
+					
 					image_p = image_p + 3;	/*3바이트가 한 픽셀의 정보이기 때문에 이동 시켜준다.*/
-				}										
-			}
+				}
+				
+				/*4의 보수 픽셀 보정*/
+				image_p = image_p + (bip -> biWidth % 4);																	
+			}		
 			
 			EndPaint(hWnd, &ps);
 			return 0;
 	
 		case WM_LBUTTONDOWN:
 						
-			return 0;
+			return 0; 
 		
 		case WM_KEYDOWN:		/*키 입력이 들어왔을 때 여기로 들어 온다.*/
 			
