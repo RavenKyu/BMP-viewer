@@ -61,6 +61,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 	PAINTSTRUCT ps;
 	
+	HANDLE hFile;
+	DWORD dwRead;
+	
+	static TCHAR c_image[1024 * 1024];
+	static char str[125] = {0, };
+	
+	static BITMAPFILEHEADER *bfp;	
+	
 	int i_cnt_x = 10;
 	int i_cnt_y = 10;
 		
@@ -68,11 +76,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
     {
 		case WM_CREATE:
 			hWndMain = hWnd;
-									
+			
+			/*비트맵 파일을 불러온다.*/
+			hFile = CreateFile(TEXT("1.bmp"), GENERIC_READ, 0, NULL,
+						OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if(hFile == INVALID_HANDLE_VALUE)	/*실패하면 프로그램 종료*/
+			{
+				SendMessage(hWnd, WM_DESTROY, 0, 0);
+				
+				return 0;
+			}
+			else
+			{
+				/*메모리에 이미지를 적재한다.*/
+				ReadFile(hFile, c_image, 1024 * 1024, &dwRead, NULL);	
+				CloseHandle(hFile);
+				
+				bfp = (BITMAPFILEHEADER *)c_image;
+				wsprintf(str, TEXT("%d"), bfp -> bfSize);	/*파일 크기 정보*/
+												
+			}
+			InvalidateRect(hWnd, NULL, TRUE);
+							
 			return 0;
 
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
+			
+			TextOut(hdc, 10, 10, str, lstrlen(str)); 	/*파일의 총 크기를 출력*/
 									
 			for(i_cnt_x = 10; 40 >= i_cnt_x; ++i_cnt_x)
 			{
