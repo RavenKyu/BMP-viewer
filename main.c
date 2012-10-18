@@ -69,6 +69,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	
 	static BITMAPFILEHEADER *bfp;	
 	
+	static char *image_p;
+	
 	int i_cnt_x = 10;
 	int i_cnt_y = 10;
 		
@@ -103,13 +105,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
 			
-			TextOut(hdc, 10, 10, str, lstrlen(str)); 	/*파일의 총 크기를 출력*/
+			//TextOut(hdc, 10, 10, str, lstrlen(str)); 	/*파일의 총 크기를 출력*/
 									
-			for(i_cnt_x = 10; 40 >= i_cnt_x; ++i_cnt_x)
+			/*for(i_cnt_x = 10; 40 >= i_cnt_x; ++i_cnt_x)
 			{
 				SetPixel(hdc, i_cnt_x, i_cnt_y, RGB(255, 0, 0));
-			} 	
-							
+			}*/
+			
+			image_p = c_image + (bfp -> bfOffBits);	/*image_p 는 image의 처음을 가리키게 된다.*/
+			
+			/*화면에 사진을 출력*/
+			for(i_cnt_y = 0; 710 > i_cnt_y; ++i_cnt_y)
+			{		
+				for(i_cnt_x = 0; 361 > i_cnt_x; ++i_cnt_x)
+				{
+					SetPixel(hdc, i_cnt_x, 710 - i_cnt_y, RGB(*(image_p + 2), *(image_p + 1), *(image_p + 0)));	/*이미지의 한 줄만 출력해 본다. BGR 순으로 나온다.*/
+					image_p = image_p + 3;	/*3바이트가 한 픽셀의 정보이기 때문에 이동 시켜준다.*/
+				}										
+			}
+			
 			EndPaint(hWnd, &ps);
 			return 0;
 	
