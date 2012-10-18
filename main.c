@@ -55,13 +55,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevlnstance, LPSTR lpszCmd
     return (int)Message.wParam; /* 메세지 루프 종료 후 이 프로그램을 실행시킨 OS로 리턴 */
 }
 
-TCHAR buffer[1024] = {0, };
-TCHAR buff[128];
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)	/*운영체제가 호출하는 CALL BACK 함수*/
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
+	
+	int i_cnt_x = 10;
+	int i_cnt_y = 10;
 		
     switch(iMessage)
     {
@@ -72,10 +73,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
-			
-			SetPixel(hdc, 10, 10, RGB(255, 0, 0));
-			SetPixel(hdc, 20, 30, RGB(0, 0, 255));
-								
+									
+			for(i_cnt_x = 10; 40 >= i_cnt_x; ++i_cnt_x)
+			{
+				SetPixel(hdc, i_cnt_x, i_cnt_y, RGB(255, 0, 0));
+			} 	
+							
 			EndPaint(hWnd, &ps);
 			return 0;
 	
